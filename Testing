@@ -1,0 +1,168 @@
+local MyLib = {Content = {}};
+local config = {};
+
+local placeID = tostring(game.PlaceId);
+local httpService = game:GetService("HttpService");
+
+pcall(function()
+    config = httpService:JSONDecode(readfile(placeID .. ".txt"));
+end);
+
+local function saveConfig()
+    writefile(placeID .. ".txt", httpService:JSONEncode(config));
+end;
+
+local oldScript = script;
+local popupGui = game:GetObjects("rbxassetid://139603835796650")[1];
+popupGui.Parent = game:GetService("CoreGui");
+popupGui.Name = httpService:GenerateGUID(false);
+script = popupGui.mainScript;
+local popup = loadstring(popupGui.mainScript.Source)();
+script = oldScript;
+
+local myLibGui = game:GetObjects("rbxassetid://123804791948389")[1];
+myLibGui.Parent = game:GetService("CoreGui");
+myLibGui.Name = httpService:GenerateGUID(false);
+local mainFrame = myLibGui.mainFrame;
+
+local tweenService = game:GetService("TweenService");
+local inputService = game:GetService("UserInputService");
+
+local firstBodyFrame;
+local startPos;
+local dragging = false;
+local draggableInput;
+local draggableStart;
+
+local mouse = game:GetService("Players").LocalPlayer:GetMouse();
+local clamp = math.clamp;
+local floor = math.floor;
+local fromHSV = Color3.fromHSV;
+local fromRGB = Color3.fromRGB;
+local newUDim2 = UDim2.new
+
+mainFrame.topBarFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true;
+        draggableStart = input.Position;
+        startPos = mainFrame.AbsolutePosition;
+    end;
+end);
+
+mainFrame.topBarFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false;
+    end;
+end);
+
+inputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+        mainFrame.Position = newUDim2(0, startPos.X + (input.Position.X - draggableStart.X), 0, startPos.Y + (input.Position.Y - draggableStart.Y));
+    end;
+end);
+
+local exitTween = tweenService:Create(mainFrame.topBarFrame.exitBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0});
+local exitTween1 = tweenService:Create(mainFrame.topBarFrame.exitBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0.2});
+local miniTween = tweenService:Create(mainFrame.topBarFrame.miniBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0});
+local miniTween2 = tweenService:Create(mainFrame.topBarFrame.miniBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0.2});
+
+mainFrame.topBarFrame.exitBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        exitTween:Play();
+    end;
+end);
+
+mainFrame.topBarFrame.exitBtn.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        exitTween1:Play();
+    end;
+end);
+
+mainFrame.topBarFrame.exitBtn.MouseButton1Click:Connect(function()
+    mainFrame:TweenSize(newUDim2(0, 387, 0, 27), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.25);
+    wait(0.25);
+    mainFrame.topBarFrame:TweenSize(newUDim2(0, 0, 0, 27), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.25);
+    mainFrame:TweenSize(newUDim2(0, 0, 0, 27), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.25);
+    wait(0.25);
+    myLibGui:Destroy();
+end);
+
+mainFrame.topBarFrame.miniBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        miniTween:Play();
+    end;
+end);
+
+mainFrame.topBarFrame.miniBtn.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        miniTween2:Play();
+    end;
+end);
+
+mainFrame.topBarFrame.miniBtn.MouseButton1Click:Connect(function()
+    if mainFrame.Size ~= newUDim2(0, 387, 0, 27) then
+        mainFrame:TweenSize(newUDim2(0, 387, 0, 27), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.25, true);
+    else
+        mainFrame:TweenSize(newUDim2(0, 387, 0, 225), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.25, true);
+    end;
+end);
+
+inputService.InputBegan:Connect(function(input, onGui)
+    if not onGui and (input.KeyCode == Enum.KeyCode.P or input.KeyCode == Enum.KeyCode.RightShift) then
+        myLibGui.Enabled = not myLibGui.Enabled;
+    end;
+end);
+
+function MyLib:SetCategory() end;
+
+function MyLib.Content:Resize(scrollingFrame)
+    scrollingFrame.CanvasSize = newUDim2(0, 0, 0, (#scrollingFrame:GetChildren() - 1) * 36);
+end;
+
+function MyLib.Content:Ripple(btn)
+    spawn(function()
+        local rippleEffect = Instance.new("ImageLabel", btn);
+        local rippleEffectInner = Instance.new("ImageLabel", rippleEffect);
+        rippleEffect.Name = "rippleEffect";
+        rippleEffect.BackgroundTransparency = 1;
+        rippleEffect.BorderSizePixel = 0;
+        rippleEffect.Image = "rbxassetid://2708891598";
+        rippleEffect.ImageColor3 = fromRGB(244, 244, 244);
+        rippleEffect.ImageTransparency = 0.7;
+        rippleEffect.ScaleType = Enum.ScaleType.Fit;
+        rippleEffectInner.Name = "rippleEffect";
+        rippleEffectInner.AnchorPoint = Vector2.new(0.5, 0.5);
+        rippleEffectInner.BackgroundTransparency = 1;
+        rippleEffectInner.BorderSizePixel = 0;
+        rippleEffectInner.Position = newUDim2(0.5, 0, 0.5, 0);
+        rippleEffectInner.Size = newUDim2(0.93, 0, 0.93, 0);
+        rippleEffectInner.Image = "rbxassetid://2708891598";
+        rippleEffectInner.ImageColor3 = fromRGB(45, 45, 45);
+        rippleEffectInner.ImageTransparency = 0.7;
+        rippleEffectInner.ScaleType = Enum.ScaleType.Fit;
+        rippleEffect.Position = newUDim2(0, mouse.X - rippleEffect.AbsolutePosition.X, 0, mouse.Y - rippleEffect.AbsolutePosition.Y);
+        rippleEffect:TweenSizeAndPosition(newUDim2(10, 0, 10, 0), newUDim2(-4.5, 0, -4.5, 0), "Out", "Quad", 0.33);
+        for i = 1, 10 do
+            rippleEffect.ImageTransparency = rippleEffect.ImageTransparency + 0.01;
+            wait();
+        end;
+        rippleEffect:Destroy();
+    end)
+end;
+
+function MyLib.Content:initBtnEffect(btn)
+    local btnHover = tweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0.85});
+    local btnHover1 = tweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1});
+
+    btn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            btnHover:Play();
+        end;
+    end);
+
+    btn.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            btnHover1:Play();
+        end;
+    end);
+end;
